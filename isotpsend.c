@@ -70,6 +70,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -f <time ns> (ignore FC and force local tx stmin value in nanosecs)\n");
 	fprintf(stderr, "         -D <len>     (send a fixed PDU with len bytes - no STDIN data)\n");
 	fprintf(stderr, "         -L <mtu>:<tx_dl>:<tx_flags> (link layer options for CAN FD)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "\nCAN IDs and addresses are given and expected in hexadecimal values.\n");
 	fprintf(stderr, "The pdu data is expected on STDIN in space separated ASCII hex values.\n");
 	fprintf(stderr, "\n");
@@ -77,7 +78,7 @@ void print_usage(char *prg)
 
 int main(int argc, char **argv)
 {
-    int s;
+    int s, proto = CAN_ISOTP;
     struct sockaddr_can addr;
     struct ifreq ifr;
     static struct can_isotp_options opts;
@@ -92,7 +93,7 @@ int main(int argc, char **argv)
 
     addr.can_addr.tp.tx_id = addr.can_addr.tp.rx_id = NO_CAN_ID;
 
-    while ((opt = getopt(argc, argv, "s:d:x:p:P:t:f:D:L:?")) != -1) {
+    while ((opt = getopt(argc, argv, "s:d:x:p:P:t:f:D:L:z:?")) != -1) {
 	    switch (opt) {
 	    case 's':
 		    addr.can_addr.tp.tx_id = strtoul(optarg, (char **)NULL, 16);
@@ -185,6 +186,9 @@ int main(int argc, char **argv)
 			    exit(0);
 		    }
 		    break;
+		case 'z':
+		    proto = atoi(optarg);
+		    break;
 
 	    case '?':
 		    print_usage(basename(argv[0]));
@@ -206,7 +210,7 @@ int main(int argc, char **argv)
 	    exit(1);
     }
   
-    if ((s = socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP)) < 0) {
+    if ((s = socket(PF_CAN, SOCK_DGRAM, proto)) < 0) {
 	perror("socket");
 	exit(1);
     }

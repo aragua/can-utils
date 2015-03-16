@@ -413,6 +413,7 @@ int main(int argc, char **argv)
 	fd_set rdfs;
 	int p; /* pty master file */ 
 	int s; /* can raw socket */ 
+	int proto = CAN_RAW;
 	struct sockaddr_can addr;
 	struct termios topts;
 	struct ifreq ifr;
@@ -424,18 +425,22 @@ int main(int argc, char **argv)
 
 	/* check command line options */
 	if (argc != 3) {
-		fprintf(stderr, "\n");
-		fprintf(stderr, "%s creates a pty for applications using"
-			" the slcan ASCII protocol and\n", argv[0]);
-		fprintf(stderr, "converts the ASCII data to a CAN network"
-			" interface (and vice versa)\n\n");
-		fprintf(stderr, "Usage: %s <pty> <can interface>\n", argv[0]);
-		fprintf(stderr, "e.g. '%s /dev/ptyc0 can0' creates"
-			" /dev/ttyc0 for the slcan application\n", argv[0]);
-		fprintf(stderr, "e.g. for pseudo-terminal '%s %s can0' creates"
-			" /dev/pts/N\n", argv[0], DEVICE_NAME_PTMX);
-		fprintf(stderr, "\n");
-		return 1;
+		if ( argc != 5 ) {
+			fprintf(stderr, "\n");
+			fprintf(stderr, "%s creates a pty for applications using"
+							" the slcan ASCII protocol and\n", argv[0]);
+			fprintf(stderr, "converts the ASCII data to a CAN network"
+							" interface (and vice versa)\n\n");
+			fprintf(stderr, "Usage: %s <pty> <can interface> [-z <protnbr>]\n", argv[0]);
+			fprintf(stderr, "e.g. '%s /dev/ptyc0 can0' creates"
+							" /dev/ttyc0 for the slcan application\n", argv[0]);
+			fprintf(stderr, "e.g. for pseudo-terminal '%s %s can0' creates"
+							" /dev/pts/N\n", argv[0], DEVICE_NAME_PTMX);
+			fprintf(stderr, "\n");
+			return 1;
+		}
+		else
+			proto = atoi(argv[4]); 
 	}
 
 	select_stdin = check_select_stdin();
@@ -483,7 +488,7 @@ int main(int argc, char **argv)
 	}
 
 	/* open socket */
-	s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+	s = socket(PF_CAN, SOCK_RAW, proto);
 	if (s < 0) {
 		perror("socket");
 		return 1;

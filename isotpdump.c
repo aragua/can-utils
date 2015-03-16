@@ -72,13 +72,14 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -c          (color mode)\n");
 	fprintf(stderr, "         -a          (print data also in ASCII-chars)\n");
 	fprintf(stderr, "         -t <type>   (timestamp: (a)bsolute/(d)elta/(z)ero/(A)bsolute w date)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_RAW)\n");
 	fprintf(stderr, "\nCAN IDs and addresses are given and expected in hexadecimal values.\n");
 	fprintf(stderr, "\n");
 }
 
 int main(int argc, char **argv)
 {
-	int s;
+	int s, proto = CAN_RAW;
 	struct sockaddr_can addr;
 	struct can_filter rfilter[2];
 	struct canfd_frame frame;
@@ -105,7 +106,7 @@ int main(int argc, char **argv)
 	last_tv.tv_sec  = 0;
 	last_tv.tv_usec = 0;
 
-	while ((opt = getopt(argc, argv, "s:d:ax:X:ct:?")) != -1) {
+	while ((opt = getopt(argc, argv, "s:d:ax:X:ct:z:?")) != -1) {
 		switch (opt) {
 		case 's':
 			src = strtoul(optarg, (char **)NULL, 16);
@@ -152,6 +153,9 @@ int main(int argc, char **argv)
 				timestamp = 0;
 			}
 			break;
+		case 'z':
+			proto = atoi(optarg);
+			break;
 
 		case '?':
 			print_usage(basename(argv[0]));
@@ -176,7 +180,7 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_RAW, proto)) < 0) {
 		perror("socket");
 		return 1;
 	}

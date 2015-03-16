@@ -92,6 +92,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -w <num>     (max. wait frame transmissions.)\n");
 	fprintf(stderr, "         -h           (half duplex mode.)\n");
 	fprintf(stderr, "         -v           (verbose mode. Print symbols for tunneled msgs.)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "\nCAN IDs and addresses are given and expected in hexadecimal values.\n");
 	fprintf(stderr, "Use e.g. 'ifconfig ctun0 123.123.123.1 pointopoint 123.123.123.2 up'\n");
 	fprintf(stderr, "to create a point-to-point IP connection on CAN.\n");
@@ -106,7 +107,7 @@ void sigterm(int signo)
 int main(int argc, char **argv)
 {
 	fd_set rdfs;
-	int s, t;
+	int s, t, proto = CAN_ISOTP;
 	struct sockaddr_can addr;
 	struct ifreq ifr;
 	static struct can_isotp_options opts;
@@ -125,7 +126,7 @@ int main(int argc, char **argv)
 
 	addr.can_addr.tp.tx_id = addr.can_addr.tp.rx_id = NO_CAN_ID;
 
-	while ((opt = getopt(argc, argv, "s:d:n:x:p:P:t:b:m:whL:v?")) != -1) {
+	while ((opt = getopt(argc, argv, "s:d:n:x:p:P:t:b:m:whL:vz:?")) != -1) {
 		switch (opt) {
 		case 's':
 			addr.can_addr.tp.tx_id = strtoul(optarg, (char **)NULL, 16);
@@ -229,7 +230,9 @@ int main(int argc, char **argv)
 		case 'v':
 			verbose = 1;
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case '?':
 			print_usage(basename(argv[0]));
 			exit(0);
@@ -250,7 +253,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
   
-	if ((s = socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_DGRAM, proto)) < 0) {
 		perror("socket");
 		exit(1);
 	}

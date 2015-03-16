@@ -90,6 +90,7 @@ void print_usage(char *prg)
 		"timestamps > 's' seconds)\n");
 	fprintf(stderr, "                      -x           (disable local "
 		"loopback of sent CAN frames)\n");
+	fprintf(stderr, "       			   -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "                      -v           (verbose: print "
 		"sent CAN frames)\n\n");
 	fprintf(stderr, "Interface assignment:  0..n assignments like "
@@ -237,7 +238,7 @@ int main(int argc, char **argv)
 	static struct canfd_frame frame;
 	static struct timeval today_tv, log_tv, last_log_tv, diff_tv;
 	struct timespec sleep_ts;
-	int s; /* CAN_RAW socket */
+	int s, proto = CAN_RAW; /* CAN_RAW socket */
 	FILE *infile = stdin;
 	unsigned long gap = DEFAULT_GAP; 
 	int use_timestamps = 1;
@@ -250,7 +251,7 @@ int main(int argc, char **argv)
 	int eof, txmtu, i, j;
 	char *fret;
 
-	while ((opt = getopt(argc, argv, "I:l:tg:s:xv?")) != -1) {
+	while ((opt = getopt(argc, argv, "I:l:tg:s:xvz:?")) != -1) {
 		switch (opt) {
 		case 'I':
 			infile = fopen(optarg, "r");
@@ -293,7 +294,9 @@ int main(int argc, char **argv)
 		case 'v':
 			verbose++;
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case '?':
 		default:
 			print_usage(basename(argv[0]));
@@ -320,7 +323,7 @@ int main(int argc, char **argv)
 	sleep_ts.tv_nsec = (gap % 1000) * 1000000;
 
 	/* open socket */
-	if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_RAW, proto)) < 0) {
 		perror("socket");
 		return 1;
 	}

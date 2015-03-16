@@ -137,7 +137,7 @@ int main(int argc, char **argv)
 {
 
 	int sl, sa, sc;
-	int i;
+	int i, proto = CAN_BCM;
 	int idx = 0;
 	struct sockaddr_in  saddr, clientaddr;
 	struct sockaddr_can caddr;
@@ -155,6 +155,11 @@ int main(int argc, char **argv)
 		struct bcm_msg_head msg_head;
 		struct can_frame frame;
 	} msg;
+
+        if ( (argc==3) && (strncmp(argv[1],"-z",3) == 0))
+        {
+          proto = atoi(argv[2]);
+        }
 
 	sigemptyset(&sigset);
 	signalaction.sa_handler = &childdied;
@@ -204,7 +209,7 @@ int main(int argc, char **argv)
 
 	/* open BCM socket */
 
-	if ((sc = socket(PF_CAN, SOCK_DGRAM, CAN_BCM)) < 0) {
+	if ((sc = socket(PF_CAN, SOCK_DGRAM, proto)) < 0) {
 		perror("bcmsocket");
 		return 1;
 	}

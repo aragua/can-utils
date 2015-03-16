@@ -74,6 +74,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -t <type>   (timestamp: (a)bsolute/(d)elta/(z)ero/(A)bsolute w date)\n");
 	fprintf(stderr, "         -f <format> (1 = HEX, 2 = ASCII, 3 = HEX & ASCII - default: %d)\n", FORMAT_DEFAULT);
 	fprintf(stderr, "         -h <len>    (head: print only first <len> bytes)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "\nCAN IDs and addresses are given and expected in hexadecimal values.\n");
 	fprintf(stderr, "\n");
 }
@@ -173,7 +174,7 @@ void printbuf(unsigned char *buffer, int nbytes, int color, int timestamp,
 int main(int argc, char **argv)
 {
 	fd_set rdfs;
-	int s, t;
+	int s, t, proto = CAN_ISOTP;
 	struct sockaddr_can addr;
 	struct ifreq ifr;
 	static struct can_isotp_options opts;
@@ -190,7 +191,7 @@ int main(int argc, char **argv)
 	unsigned char buffer[4096];
 	int nbytes;
 
-	while ((opt = getopt(argc, argv, "s:d:x:X:h:ct:f:?")) != -1) {
+	while ((opt = getopt(argc, argv, "s:d:x:X:h:ct:f:z:?")) != -1) {
 		switch (opt) {
 		case 's':
 			src = strtoul(optarg, (char **)NULL, 16);
@@ -235,7 +236,9 @@ int main(int argc, char **argv)
 				timestamp = 0;
 			}
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case '?':
 			print_usage(basename(argv[0]));
 			exit(0);
@@ -259,12 +262,12 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	if ((s = socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_DGRAM, proto)) < 0) {
 		perror("socket");
 		exit(1);
 	}
 
-	if ((t = socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP)) < 0) {
+	if ((t = socket(PF_CAN, SOCK_DGRAM, proto)) < 0) {
 		perror("socket");
 		exit(1);
 	}

@@ -98,6 +98,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -r (redraw the terminal - similar to top)\n");
 	fprintf(stderr, "         -i (ignore bitstuffing in bandwidth calculation)\n");
 	fprintf(stderr, "         -e (exact calculation of stuffed bits)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_RAW)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Up to %d CAN interfaces with mandatory bitrate can be specified on the \n", MAXSOCK);
 	fprintf(stderr, "commandline in the form: <ifname>@<bitrate>\n\n");
@@ -232,6 +233,7 @@ int main(int argc, char **argv)
 	int s[MAXSOCK];
 
 	int opt;
+	int proto = CAN_RAW;
 	char *ptr, *nptr;
 	struct sockaddr_can addr;
 	struct can_frame frame;
@@ -247,7 +249,7 @@ int main(int argc, char **argv)
 
 	prg = basename(argv[0]);
 
-	while ((opt = getopt(argc, argv, "rtbcieh?")) != -1) {
+	while ((opt = getopt(argc, argv, "rtbciehz:?")) != -1) {
 		switch (opt) {
 		case 'r':
 			redraw = 1;
@@ -272,7 +274,9 @@ int main(int argc, char **argv)
 		case 'e':
 			mode = CFL_EXACT;
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		default:
 			print_usage(prg);
 			exit(1);
@@ -306,7 +310,7 @@ int main(int argc, char **argv)
 		printf("open %d '%s'.\n", i, ptr);
 #endif
 
-		s[i] = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+		s[i] = socket(PF_CAN, SOCK_RAW, proto);
 		if (s[i] < 0) {
 			perror("socket");
 			return 1;

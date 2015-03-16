@@ -61,14 +61,19 @@ int main(int argc, char **argv)
 	int required_mtu;
 	int mtu;
 	int enable_canfd = 1;
+	int proto = CAN_RAW;
 	struct sockaddr_can addr;
 	struct canfd_frame frame;
 	struct ifreq ifr;
 
 	/* check command line options */
 	if (argc != 3) {
-		fprintf(stderr, "Usage: %s <device> <can_frame>.\n", argv[0]);
-		return 1;
+		if ( argc != 5 ) {
+			fprintf(stderr, "Usage: %s <device> <can_frame> [-z <protnbr>].\n", argv[0]);
+			return 1;
+		}
+		else
+			proto = atoi(argv[4]);
 	}
 
 	/* parse CAN frame */
@@ -89,7 +94,7 @@ int main(int argc, char **argv)
 	}
 
 	/* open socket */
-	if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_RAW, proto)) < 0) {
 		perror("socket");
 		return 1;
 	}

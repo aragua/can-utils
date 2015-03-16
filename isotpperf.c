@@ -68,6 +68,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -d <can_id> (destination can_id. Use 8 digits for extended IDs)\n");
 	fprintf(stderr, "         -x <addr>   (extended addressing mode)\n");
 	fprintf(stderr, "         -X <addr>   (extended addressing mode (rx addr))\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "\nCAN IDs and addresses are given and expected in hexadecimal values.\n");
 	fprintf(stderr, "\n");
 }
@@ -87,7 +88,7 @@ unsigned int getdigits(unsigned int value)
 int main(int argc, char **argv)
 {
 	fd_set rdfs;
-	int s;
+	int s, proto = CAN_RAW;
 	int running = 1;
 	struct sockaddr_can addr;
 	struct can_filter rfilter[2];
@@ -114,7 +115,7 @@ int main(int argc, char **argv)
 	unsigned int sn, last_sn = 0;
 	int opt;
 
-	while ((opt = getopt(argc, argv, "s:d:x:X:?")) != -1) {
+	while ((opt = getopt(argc, argv, "s:d:x:X:z:?")) != -1) {
 		switch (opt) {
 		case 's':
 			src = strtoul(optarg, (char **)NULL, 16);
@@ -137,7 +138,9 @@ int main(int argc, char **argv)
 			rx_ext = 1;
 			rx_extaddr = strtoul(optarg, (char **)NULL, 16) & 0xFF;
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case '?':
 			print_usage(basename(argv[0]));
 			exit(0);
@@ -156,7 +159,7 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_RAW, proto)) < 0) {
 		perror("socket");
 		return 1;
 	}

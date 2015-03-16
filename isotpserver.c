@@ -121,6 +121,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "\n");
 	fprintf(stderr, "tx path: (config, which changes local tx settings)\n");
 	fprintf(stderr, "         -t <time ns> (transmit time in nanosecs)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "All values except for '-l' and '-t' are expected in hexadecimal values.\n");
 	fprintf(stderr, "\n");
@@ -148,7 +149,7 @@ int main(int argc, char **argv)
 
 	int i;
 	int nbytes;
-
+	int proto = CAN_ISOTP;
 	int local_port = 0;
 	int verbose = 0;
 
@@ -161,7 +162,7 @@ int main(int argc, char **argv)
 	/* mark missing mandatory commandline options as missing */
 	caddr.can_addr.tp.tx_id = caddr.can_addr.tp.rx_id = NO_CAN_ID;
 
-	while ((opt = getopt(argc, argv, "l:s:d:x:p:P:b:m:w:t:L:v?")) != -1) {
+	while ((opt = getopt(argc, argv, "l:s:d:x:p:P:b:m:w:t:L:vz:?")) != -1) {
 		switch (opt) {
 		case 'l':
 			local_port = strtoul(optarg, (char **)NULL, 10);
@@ -261,7 +262,9 @@ int main(int argc, char **argv)
 		case 'v':
 			verbose = 1;
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case '?':
 			print_usage(basename(argv[0]));
 			exit(0);
@@ -329,7 +332,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((sc = socket(PF_CAN, SOCK_DGRAM, CAN_ISOTP)) < 0) {
+	if ((sc = socket(PF_CAN, SOCK_DGRAM, proto)) < 0) {
 		perror("socket");
 		exit(1);
 	}

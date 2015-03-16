@@ -172,6 +172,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -t <time>  (timeout for ID display [x10ms] default: %d, 0 = OFF)\n", TIMEOUT);
 	fprintf(stderr, "         -h <time>  (hold marker on changes [x10ms] default: %d)\n", HOLD);
 	fprintf(stderr, "         -l <time>  (loop time (display) [x10ms] default: %d)\n", LOOP);
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "Use interface name '%s' to receive from all can-interfaces\n", ANYDEV);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "%s", manual);
@@ -185,7 +186,7 @@ void sigterm(int signo)
 int main(int argc, char **argv)
 {
 	fd_set rdfs;
-	int s;
+	int s, proto = CAN_BCM;
 	canid_t mask = 0;
 	canid_t value = 0;
 	long currcms = 0;
@@ -205,7 +206,7 @@ int main(int argc, char **argv)
 	for (i=0; i < 2048 ;i++) /* default: check all CAN-IDs */
 		do_set(i, ENABLE);
 
-	while ((opt = getopt(argc, argv, "m:v:r:t:h:l:qbBcf?")) != -1) {
+	while ((opt = getopt(argc, argv, "m:v:r:t:h:l:qbBcfz:?")) != -1) {
 		switch (opt) {
 		case 'm':
 			sscanf(optarg, "%x", &mask);
@@ -252,7 +253,9 @@ int main(int argc, char **argv)
 		case 'f':
 			filter_id_only = 1;
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case '?':
 			break;
 
@@ -287,7 +290,7 @@ int main(int argc, char **argv)
 
 	interface = argv[optind];
 
-	if ((s = socket(PF_CAN, SOCK_DGRAM, CAN_BCM)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_DGRAM, proto)) < 0) {
 		perror("socket");
 		return 1;
 	}
@@ -689,12 +692,12 @@ void writesettings(char* name){
 
 		for (i=0; i < 2048 ;i++) {
 			sprintf(buf, "<%03X>%c.", i, (is_set(i, ENABLE))?'1':'0');
-			write(fd, buf, 7);
+			if(write(fd, buf, 7));
 			for (j=0; j<8 ; j++){
 				sprintf(buf, "%02X", sniftab[i].notch.data[j]);
-				write(fd, buf, 2);
+				if(write(fd, buf, 2));
 			}
-			write(fd, "\n", 1);
+			if(write(fd, "\n", 1));
 			/* 7 + 16 + 1 = 24 bytes per entry */ 
 		}
 		close(fd);

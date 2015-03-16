@@ -100,6 +100,7 @@ void print_usage(char *prg)
 		" write() syscalls)\n");
 	fprintf(stderr, "         -x            (disable local loopback of "
 		"generated CAN frames)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "         -v            (increment verbose level for "
 		"printing sent CAN frames)\n\n");
 	fprintf(stderr, "Generation modes:\n");
@@ -144,6 +145,7 @@ int main(int argc, char **argv)
 	unsigned char verbose = 0;
 	unsigned char rtr_frame = 0;
 	int count = 0;
+	int proto = CAN_RAW;
 	int mtu, maxdlen;
 	uint64_t incdata = 0;
 	int incdlc = 0;
@@ -170,7 +172,7 @@ int main(int argc, char **argv)
 	signal(SIGHUP, sigterm);
 	signal(SIGINT, sigterm);
 
-	while ((opt = getopt(argc, argv, "ig:efmI:L:D:xp:n:vRh?")) != -1) {
+	while ((opt = getopt(argc, argv, "ig:efmI:L:D:xp:n:vRhz:?")) != -1) {
 		switch (opt) {
 
 		case 'i':
@@ -253,7 +255,9 @@ int main(int argc, char **argv)
 				return 1;
 			}
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case '?':
 		case 'h':
 		default:
@@ -283,7 +287,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+	if ((s = socket(PF_CAN, SOCK_RAW, proto)) < 0) {
 		perror("socket");
 		return 1;
 	}

@@ -124,6 +124,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -e          (dump CAN error frames in human-readable format)\n");
 	fprintf(stderr, "         -x          (print extra message infos, rx/tx brs esi)\n");
 	fprintf(stderr, "         -T <msecs>  (terminate after <msecs> without any reception)\n");
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_RAW)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Up to %d CAN interfaces with optional filter sets can be specified\n", MAXSOCK);
 	fprintf(stderr, "on the commandline in the form: <ifname>[,filter]*\n");
@@ -218,6 +219,7 @@ int main(int argc, char **argv)
 	int rcvbuf_size = 0;
 	int opt, ret;
 	int currmax, numfilter;
+	int proto = CAN_RAW;
 	char *ptr, *nptr;
 	struct sockaddr_can addr;
 	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
@@ -240,7 +242,7 @@ int main(int argc, char **argv)
 	last_tv.tv_sec  = 0;
 	last_tv.tv_usec = 0;
 
-	while ((opt = getopt(argc, argv, "t:ciaSs:b:B:u:ldxLn:r:heT:?")) != -1) {
+	while ((opt = getopt(argc, argv, "t:ciaSs:b:B:u:ldxLn:r:hez:T:?")) != -1) {
 		switch (opt) {
 		case 't':
 			timestamp = optarg[0];
@@ -286,7 +288,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Name of CAN device '%s' is too long!\n\n", optarg);
 				return 1;
 			} else {
-				bridge = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+				bridge = socket(PF_CAN, SOCK_RAW, proto);
 				if (bridge < 0) {
 					perror("bridge socket");
 					return 1;
@@ -354,7 +356,9 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		case 'T':
 			errno = 0;
 			timeout_config.tv_usec = strtol(optarg, NULL, 0);
@@ -407,7 +411,7 @@ int main(int argc, char **argv)
 		printf("open %d '%s'.\n", i, ptr);
 #endif
 
-		s[i] = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+		s[i] = socket(PF_CAN, SOCK_RAW, proto);
 		if (s[i] < 0) {
 			perror("socket");
 			return 1;

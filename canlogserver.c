@@ -92,6 +92,7 @@ void print_usage(char *prg)
 	fprintf(stderr, "         -i <0|1>    (invert the specified ID filter) *\n");
 	fprintf(stderr, "         -e <emask>  (mask for error frames)\n");
 	fprintf(stderr, "         -p <port>   (listen on port <port>. Default: %d)\n", DEFPORT);
+	fprintf(stderr, "         -z <portnbr> (change protocol number default:CAN_ISOTP)\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "* The CAN ID filter matches, when ...\n");
 	fprintf(stderr, "       <received_can_id> & mask == value & mask\n");
@@ -179,6 +180,7 @@ int main(int argc, char **argv)
 	int inv_filter[MAXDEV] = {0};
 	can_err_mask_t err_mask[MAXDEV] = {0};
 	int opt, ret;
+	int proto = CAN_RAW;
 	int currmax = 1; /* we assume at least one can bus ;-) */
 	struct sockaddr_can addr;
 	struct can_filter rfilter;
@@ -204,7 +206,7 @@ int main(int argc, char **argv)
 	sigaction(SIGTERM, &signalaction, NULL); /* install Signal for termination */
 	sigaction(SIGINT, &signalaction, NULL); /* install Signal for termination */
 
-	while ((opt = getopt(argc, argv, "m:v:i:e:p:?")) != -1) {
+	while ((opt = getopt(argc, argv, "m:v:i:e:p:z:?")) != -1) {
 
 		switch (opt) {
 		case 'm':
@@ -240,6 +242,9 @@ int main(int argc, char **argv)
 			break;
 		case 'p':
 			port = atoi(optarg);
+			break;
+		case 'z':
+			proto = atoi(optarg);
 			break;
 		default:
 			print_usage(basename(argv[0]));
@@ -310,7 +315,7 @@ int main(int argc, char **argv)
 		       inv_filter[i], err_mask[i]);
 #endif
 
-		if ((s[i] = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
+		if ((s[i] = socket(PF_CAN, SOCK_RAW, proto)) < 0) {
 			perror("socket");
 			return 1;
 		}

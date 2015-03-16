@@ -57,6 +57,7 @@ static void print_usage(char *prg)
 		"         -vv      (high verbosity)\n"
 		"         -g       (generate messages)\n"
 		"         -l COUNT (test loop count)\n"
+		"         -z <portnbr> (change protocol number default:CAN_ISOTP)\n"
 		"\n"
 		"With the option '-g' CAN messages are generated and checked\n"
 		"on <can-interface>, otherwise all messages received on the\n"
@@ -323,7 +324,7 @@ int main(int argc, char *argv[])
 	signal(SIGHUP, signal_handler);
 	signal(SIGINT, signal_handler);
 
-	while ((opt = getopt(argc, argv, "gl:v")) != -1) {
+	while ((opt = getopt(argc, argv, "gl:vz:")) != -1) {
 		switch (opt) {
 		case 'v':
 			verbose++;
@@ -336,7 +337,9 @@ int main(int argc, char *argv[])
 		case 'g':
 			echo_gen = 1;
 			break;
-
+		case 'z':
+			proto = atoi(optarg);
+			break;
 		default:
 			print_usage(basename(argv[0]));
 			break;
