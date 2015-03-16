@@ -12,14 +12,7 @@ LDADD = \
 noinst_HEADERS = \
 	canframelen.h \
 	lib.h \
-	terminal.h \
-	include/linux/can/bcm.h \
-	include/linux/can/error.h \
-	include/linux/can/gw.h \
-	include/linux/can.h \
-	include/linux/can/isotp.h \
-	include/linux/can/netlink.h \
-	include/linux/can/raw.h
+	terminal.h
 
 
 noinst_LTLIBRARIES = \
@@ -55,6 +48,26 @@ bin_PROGRAMS = \
 	slcan_attach \
 	slcand \
 	slcanpty
+
+if CONFIG_GW
+bin_PROGRAMS += \
+	cangw
+endif
+
+if CONFIG_J1939
+bin_PROGRAMS += \
+	jacd \
+	jsr \
+	jspy
+
+jacd_LDADD = libj1939.la
+jsr_LDADD = libj1939.la
+jspy_LDADD = libj1939.la
+
+noinst_LTLIBRARIES += libj1939.la
+
+libj1939_la_SOURCES = libj1939.c
+endif
 
 EXTRA_DIST = \
 	autogen.sh
