@@ -154,22 +154,26 @@ int main(int argc, char **argv)
 
 		if (speed) {
 			sprintf(buf, "C\rS%s\r", speed);
-			write(fd, buf, strlen(buf));
+			if(write(fd, buf, strlen(buf))!=strlen(buf))
+				perror("write");
 		}
 
 		if (btr) {
 			sprintf(buf, "C\rs%s\r", btr);
-			write(fd, buf, strlen(buf));
+			if(write(fd, buf, strlen(buf))!=strlen(buf))
+				perror("write");
 		}
 
 		if (send_read_status_flags) {
 			sprintf(buf, "F\r");
-			write(fd, buf, strlen(buf));
+			if(write(fd, buf, strlen(buf))!=strlen(buf))
+				perror("write");
 		}
 
 		if (send_open) {
 			sprintf(buf, "O\r");
-			write(fd, buf, strlen(buf));
+			if(write(fd, buf, strlen(buf))!=strlen(buf))
+				perror("write");
 		}
 
 		/* set slcan line discipline on given tty */
@@ -223,7 +227,8 @@ int main(int argc, char **argv)
 
 		if (send_close) {
 			sprintf(buf, "C\r");
-			write(fd, buf, strlen(buf));
+			if(write(fd, buf, strlen(buf))!=strlen(buf))
+				perror("write");
 		}
 	}
 
