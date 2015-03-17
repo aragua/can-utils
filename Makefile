@@ -56,6 +56,7 @@ PROGRAMS_ISOTP = isotpdump isotprecv isotpsend isotpsniffer isotptun isotpserver
 PROGRAMS_CANGW = cangw
 PROGRAMS_SLCAN = slcan_attach slcand
 PROGRAMS_J1939 = jacd jspy jsr
+PROGRAMS_TEST = cantestrx cantesttx
 PROGRAMS = can-calc-bit-timing candump cansniffer cansend canplayer cangen canbusload\
 	   log2long log2asc asc2log\
 	   canlogserver bcmserver\
@@ -63,6 +64,7 @@ PROGRAMS = can-calc-bit-timing candump cansniffer cansend canplayer cangen canbu
 	   $(PROGRAMS_CANGW)\
 	   $(PROGRAMS_SLCAN)\
 	   $(PROGRAMS_J1939)\
+	   $(PROGRAMS_TEST)\
 	   slcanpty canfdtest
 
 LIBRARIES = libj1939.a
